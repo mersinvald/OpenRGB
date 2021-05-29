@@ -142,8 +142,12 @@ unsigned int QMKRGBMatrixController::GetProtocolVersion()
     usb_buf[0x00] = 0x00;
     usb_buf[0x01] = QMK_RGBMATRIX_GET_PROTOCOL_VERSION;
 
-    hid_write(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE);
-    hid_read(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE);
+    int bytes_read = 0;
+    do
+    {
+        hid_write(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE);
+        bytes_read = hid_read_timeout(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE, QMK_HID_READ_TIMEOUT);
+    } while(bytes_read <= 0);
 
     return usb_buf[1];
 }
@@ -163,8 +167,12 @@ void QMKRGBMatrixController::GetDeviceInfo()
     usb_buf[0x00] = 0x00;
     usb_buf[0x01] = QMK_RGBMATRIX_GET_DEVICE_INFO;
 
-    hid_write(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE);
-    hid_read(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE);
+    int bytes_read = 0;
+    do
+    {
+        hid_write(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE);
+        bytes_read = hid_read_timeout(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE, QMK_HID_READ_TIMEOUT);
+    } while(bytes_read <= 0);
 
     total_number_of_leds = usb_buf[QMK_RGBMATRIX_TOTAL_NUMBER_OF_LEDS_BYTE];
     total_number_of_leds_with_empty_space = usb_buf[QMK_RGBMATRIX_TOTAL_NUMBER_OF_LEDS_WITH_EMPTY_SPACE_BYTE];
@@ -199,8 +207,12 @@ void QMKRGBMatrixController::GetModeInfo()
     usb_buf[0x00] = 0x00;
     usb_buf[0x01] = QMK_RGBMATRIX_GET_MODE_INFO;
 
-    hid_write(dev, usb_buf, 65);
-    hid_read(dev, usb_buf, 65);
+    int bytes_read = 0;
+    do
+    {
+        hid_write(dev, usb_buf, 65);
+        bytes_read = hid_read_timeout(dev, usb_buf, 65, QMK_HID_READ_TIMEOUT);
+    } while(bytes_read <= 0);
 
     mode = usb_buf[QMK_RGBMATRIX_MODE_BYTE];
     mode_speed = usb_buf[QMK_RGBMATRIX_SPEED_BYTE];
@@ -234,8 +246,12 @@ void QMKRGBMatrixController::GetLEDInfo(unsigned int led)
     usb_buf[0x01] = QMK_RGBMATRIX_GET_LED_INFO;
     usb_buf[0x02] = led;
 
-    hid_write(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE);
-    hid_read(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE);
+    int bytes_read = 0;
+    do
+    {
+        hid_write(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE);
+        bytes_read = hid_read_timeout(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE, QMK_HID_READ_TIMEOUT);
+    } while(bytes_read <= 0);
 
     if(usb_buf[62] != QMK_RGBMATRIX_FAILURE)
     {
@@ -272,8 +288,12 @@ bool QMKRGBMatrixController::GetIsModeEnabled(unsigned int mode)
     usb_buf[0x01] = QMK_RGBMATRIX_GET_IS_MODE_ENABLED;
     usb_buf[0x02] = mode;
 
-    hid_write(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE);
-    hid_read(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE);
+    int bytes_read = 0;
+    do
+    {
+        hid_write(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE);
+        bytes_read = hid_read_timeout(dev, usb_buf, QMK_RGBMATRIX_PACKET_SIZE, QMK_HID_READ_TIMEOUT);
+    } while(bytes_read <= 0);
 
     return usb_buf[1] == QMK_RGBMATRIX_SUCCESS ? true : false;
 }
@@ -294,8 +314,12 @@ RGBColor QMKRGBMatrixController::GetDirectModeLEDColor(unsigned int led)
     usb_buf[0x01] = QMK_RGBMATRIX_GET_DIRECT_MODE_LED_COLOR;
     usb_buf[0x02] = led;
 
-    hid_write(dev, usb_buf, 65);
-    hid_read(dev, usb_buf, 65);
+    int bytes_read = 0;
+    do
+    {
+        hid_write(dev, usb_buf, 65);
+        bytes_read = hid_read_timeout(dev, usb_buf, 65, QMK_HID_READ_TIMEOUT);
+    } while(bytes_read <= 0);
 
     return ToRGBColor(usb_buf[1], usb_buf[2], usb_buf[3]);
 }
@@ -324,7 +348,7 @@ void QMKRGBMatrixController::SetMode(hsv_t hsv_color, unsigned char mode, unsign
     | Send packet                                           |
     \*-----------------------------------------------------*/
     hid_write(dev, usb_buf, 65);
-    hid_read(dev, usb_buf, 65);
+    hid_read_timeout(dev, usb_buf, 65, QMK_HID_READ_TIMEOUT);
 }
 
 void QMKRGBMatrixController::DirectModeSetSingleLED(unsigned int led, unsigned char red, unsigned char green, unsigned char blue)
@@ -351,7 +375,7 @@ void QMKRGBMatrixController::DirectModeSetSingleLED(unsigned int led, unsigned c
     | Send packet                                           |
     \*-----------------------------------------------------*/
     hid_write(dev, usb_buf, 65);
-    hid_read(dev, usb_buf, 65);
+    hid_read_timeout(dev, usb_buf, 65, QMK_HID_READ_TIMEOUT);
 }
 
 void QMKRGBMatrixController::DirectModeSetLEDs(std::vector<RGBColor> colors, unsigned int leds_count)

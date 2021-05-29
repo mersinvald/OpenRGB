@@ -17,6 +17,7 @@
 #include <map>
 
 #define QMK_RGBMATRIX_PACKET_SIZE 65
+#define QMK_HID_READ_TIMEOUT 50
 
 enum CommandsId
 {
