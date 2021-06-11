@@ -103,6 +103,7 @@ INCLUDEPATH +=                                                                  
     Controllers/TecknetController/                                                              \
     Controllers/ThermaltakePoseidonZRGBController/                                              \
     Controllers/ThermaltakeRiingController/                                                     \
+    Controllers/MoonlanderController/                                                            \
     RGBController/                                                                              \
     qt/
 
@@ -276,12 +277,17 @@ HEADERS +=                                                                      
     Controllers/ThermaltakePoseidonZRGBController/RGBController_ThermaltakePoseidonZRGB.h       \
     Controllers/ThermaltakeRiingController/ThermaltakeRiingController.h                         \
     Controllers/ThermaltakeRiingController/RGBController_ThermaltakeRiing.h                     \
+    Controllers/MoonlanderController/MoonlanderController.h                         \
+    Controllers/MoonlanderController/RGBController_Moonlander.h                     \
     RGBController/RGBController.h                                                               \
     RGBController/RGBController_Dummy.h                                                         \
     RGBController/RGBController_Network.h                                                       \
 
 
 SOURCES +=                                                                                      \
+    Controllers/MoonlanderController/MoonlanderController.cpp \
+    Controllers/MoonlanderController/MoonlanderControllerDetect.cpp \
+    Controllers/MoonlanderController/RGBController_Moonlander.cpp \
     dependencies/dmiinfo.cpp                                                                    \
     dependencies/ColorWheel/ColorWheel.cpp                                                      \
     dependencies/libe131/src/e131.c                                                             \
@@ -639,8 +645,6 @@ win32:contains(QMAKE_TARGET.arch, x86) {
 # Linux-specific Configuration                                                                  #
 #-----------------------------------------------------------------------------------------------#
 unix:!macx {
-    TARGET = $$lower($$TARGET)
-
     INCLUDEPATH +=                                                                              \
     Controllers/FaustusController                                                               \
     Controllers/LinuxLEDController                                                              \
