@@ -138,9 +138,26 @@ HRESULT Wmi::init()
 
 HRESULT Wmi::query(std::string queryStr, std::vector<QueryObj>& queryVectorOut, const AdditionalFilters* filters)
 {
+    if (pSvc == nullptr)
+    {
+        return E_FAIL;
+    }
+
     HRESULT hres;
     int nIdx = 0;
     IEnumWbemClassObject* pEnumerator = nullptr;
+
+    // Reconnect to server before each query as we were seeing disconnected failures
+    hres = pLoc->ConnectServer(
+        _bstr_t(L"ROOT\\CIMV2"), // Object path of WMI namespace
+        nullptr,                    // User name. NULL = current user
+        nullptr,                    // User password. NULL = current
+        nullptr,                 // Locale. NULL indicates current
+        0,                    // Security flags.
+        nullptr,                 // Authority (for example, Kerberos)
+        nullptr,                 // Context object
+        &pSvc                    // pointer to IWbemServices proxy
+    );
 
     // Make the WMI query
     hres = pSvc->ExecQuery(

@@ -7,6 +7,8 @@
 #include "OpenRGBSoftwareInfoPage.h"
 #include "OpenRGBSystemInfoPage.h"
 #include "OpenRGBSupportedDevicesPage.h"
+#include "OpenRGBSettingsPage.h"
+#include "PluginManager.h"
 
 #include <vector>
 #include "i2c_smbus.h"
@@ -41,6 +43,7 @@ public:
     void setMode(unsigned char mode_val);
 
     static bool IsDarkTheme();
+    static bool IsMinimizeOnClose();
 
 private:
     /*-------------------------------------*\
@@ -50,6 +53,7 @@ private:
     OpenRGBSystemInfoPage *SMBusToolsPage;
     OpenRGBSoftwareInfoPage *SoftInfoPage;
     OpenRGBSupportedDevicesPage *SupportedPage;
+    OpenRGBSettingsPage *SettingsPage;
 
     bool ShowI2CTools = false;
 
@@ -66,6 +70,8 @@ private:
 
     void AddSoftwareInfoPage();
     void AddSupportedDevicesPage();
+    void AddSettingsPage();
+    void AddPluginTab(PluginManager* plugin_manager,int plugin_index);
 
     void ClearDevicesList();
     void UpdateDevicesList();
@@ -73,8 +79,14 @@ private:
     void closeEvent(QCloseEvent *event);
 
     void SetDetectionViewState(bool detection_showing);
+    void SaveProfile();
+    void SaveProfileAs();
+
+    void TogglePluginsVisibility(int, QTabWidget*);
 
     bool device_view_showing = false;
+
+    PluginManager* plugin_manager = nullptr;
 
 private slots:
     void on_Exit();
@@ -86,19 +98,25 @@ private slots:
     void on_QuickBlue();
     void on_QuickMagenta();
     void on_QuickWhite();
-    void on_ClientListUpdated();
     void onDeviceListUpdated();
     void onDetectionProgressUpdated();
     void on_SetAllDevices(unsigned char red, unsigned char green, unsigned char blue);
     void on_SaveSizeProfile();
     void on_ShowHide();
+    void on_ReShow(QSystemTrayIcon::ActivationReason reason);
     void on_ProfileSelected();
-    void on_ButtonSaveProfile_clicked();
     void on_ButtonLoadProfile_clicked();
     void on_ButtonDeleteProfile_clicked();
     void on_ButtonToggleDeviceView_clicked();
     void on_ButtonStopDetection_clicked();
     void on_ButtonRescan_clicked();
+    void on_ActionSaveProfile_triggered();
+    void on_ActionSaveProfileAs_triggered();
+    void on_MainTabBar_currentChanged(int);
+    void on_InformationTabBar_currentChanged(int);
+    void on_DevicesTabBar_currentChanged(int);
+    void on_SettingsTabBar_currentChanged(int);
+
 };
 
 #endif // OPENRGBDIALOG2_H

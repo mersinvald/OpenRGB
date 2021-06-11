@@ -21,7 +21,7 @@ static unsigned int matrix_map[6][23] =
       {   5,  14,  23,  NA,  NA,  NA,  NA,  41,  NA,  NA,  NA,  NA,  69,  79,  89,  71,  90,  99, 108, 101,  NA, 110,  NA } };
 
 static unsigned int matrix_map_k95_platinum[7][24] =
-    { {  NA,  NA,  NA,  NA, 107,   8,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  16,  NA,  NA,  NA,},
+    { {  NA,  NA,  NA, 119, 107,   8,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  NA,  16,  NA,  NA,  NA,},
       { 113,   0,  NA,  10,  18,  28,  36,  NA,  46,  55,  64,  74,  NA,  84,  93, 102,   6,  15,  24,  33,  26,  35,  44,  53 },
       { 114,   1,  11,  19,  29,  37,  47,  56,  65,  75,  85,  94,  NA, 103,   7,  25,  NA,  42,  51,  60,  62,  72,  82,  91 },
       { 115,   2,  NA,  12,  20,  30,  38,  NA,  48,  57,  66,  76,  86,  95, 104,  70,  80,  34,  43,  52,  9,   17,  27, 100 },
@@ -67,7 +67,7 @@ static const char* zone_names_k95_platinum[] =
 
 static const unsigned int zone_sizes_k95_platinum[] =
 {
-    119,
+    120,
     19
 };
 
@@ -95,6 +95,29 @@ static const zone_type zone_types_k95[] =
     ZONE_TYPE_MATRIX
 };
 
+/*---------------------------------------------------------*\
+| K55                                                       |
+\*---------------------------------------------------------*/
+static const char* zone_names_k55[] =
+{
+    "Left",
+    "Middle",
+    "Right",
+};
+
+static const unsigned int zone_sizes_k55[] =
+{
+    1,
+    1,
+    1
+};
+
+static const zone_type zone_types_k55[] =
+{
+    ZONE_TYPE_SINGLE,
+    ZONE_TYPE_SINGLE,
+    ZONE_TYPE_SINGLE
+};
 
 static const char* led_names[] =
 {
@@ -334,6 +357,7 @@ static const char* led_names_k95_plat[] =
     "Key: Macro G4",
     "Key: Macro G5",
     "Key: Macro G6",
+    "Key: Preset",
     "Light Bar 1",
     "Light Bar 2",
     "Light Bar 3",
@@ -513,6 +537,13 @@ static const char* corsair_mouse_leds[] =
     "Mouse LED 15",
 };
 
+static const char* led_names_k55[] =
+{
+    "LEFT",
+    "MIDDLE",
+    "RIGHT",
+};
+
 static const char* corsair_m65_elite_leds[] =
 {
     "",
@@ -607,6 +638,8 @@ RGBController_CorsairPeripheral::~RGBController_CorsairPeripheral()
             delete zones[zone_index].matrix_map;
         }
     }
+
+    delete corsair;
 }
 
 void RGBController_CorsairPeripheral::SetupZones()
@@ -623,6 +656,11 @@ void RGBController_CorsairPeripheral::SetupZones()
             if (logical_layout == CORSAIR_TYPE_K95_PLAT)
             {
                 num_zones = 2;
+                break;
+            }
+            if (logical_layout == CORSAIR_TYPE_K55)
+            {
+                num_zones = 3;
                 break;
             }
             num_zones = 1;
@@ -687,6 +725,15 @@ void RGBController_CorsairPeripheral::SetupZones()
                     {
                         new_zone.matrix_map         = NULL;
                     }
+                }
+                else if (logical_layout == CORSAIR_TYPE_K55)
+                {
+                    new_zone.name                   = zone_names_k55[zone_idx];
+                    new_zone.type                   = zone_types_k55[zone_idx];
+                    new_zone.leds_min               = zone_sizes_k55[zone_idx];
+                    new_zone.leds_max               = zone_sizes_k55[zone_idx];
+                    new_zone.leds_count             = zone_sizes_k55[zone_idx];
+                    new_zone.matrix_map             = NULL;
                 }
                 else //default layout
                 {
@@ -770,6 +817,10 @@ void RGBController_CorsairPeripheral::SetupZones()
                 else if(logical_layout == CORSAIR_TYPE_K95)
                 {
                     new_led.name = led_names_k95[led_idx];
+                }
+                else if(logical_layout == CORSAIR_TYPE_K55)
+                {
+                    new_led.name = led_names_k55[led_idx];
                 }
                 else
                 {

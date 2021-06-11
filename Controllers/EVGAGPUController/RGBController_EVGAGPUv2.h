@@ -4,7 +4,7 @@
 |  Generic RGB Interface for OpenRGB        |
 |  EVGA GPU RGB V2 (Turing) Driver          |
 |                                           |
-|  Adam Honse (CalcProgrammer1) 9/13/2020   |
+|  TheRogueZeta                 4/15/2021   |
 \*-----------------------------------------*/
 
 #pragma once
@@ -16,6 +16,7 @@ class RGBController_EVGAGPUv2 : public RGBController
 {
 public:
     RGBController_EVGAGPUv2(EVGAGPUv2Controller* evga_ptr);
+    ~RGBController_EVGAGPUv2();
 
     void        SetupZones();
 
@@ -29,5 +30,6 @@ public:
     void        DeviceUpdateMode();
 
 private:
+    int         getModeIndex(unsigned char mode_value);
     EVGAGPUv2Controller* evga;
 };

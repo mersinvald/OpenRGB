@@ -9,6 +9,7 @@
 #include "RGBController.h"
 #include "NetworkProtocol.h"
 #include "net_port.h"
+#include "ProfileManager.h"
 
 #include <mutex>
 #include <thread>
@@ -16,10 +17,16 @@
 
 #pragma once
 
+#define TCP_TIMEOUT_SECONDS 5
+
 typedef void (*NetServerCallback)(void *);
 
-struct NetworkClientInfo
+class NetworkClientInfo
 {
+public:
+    NetworkClientInfo();
+    ~NetworkClientInfo();
+
     SOCKET          client_sock;
     std::thread *   client_listen_thread;
     std::string     client_string;
@@ -35,6 +42,7 @@ public:
 
     unsigned short                      GetPort();
     bool                                GetOnline();
+    bool                                GetListening();
     unsigned int                        GetNumClients();
     const char *                        GetClientString(unsigned int client_num);
     const char *                        GetClientIP(unsigned int client_num);
@@ -43,6 +51,9 @@ public:
     void                                ClientInfoChanged();
     void                                DeviceListChanged();
     void                                RegisterClientInfoChangeCallback(NetServerCallback, void * new_callback_arg);
+
+    void                                ServerListeningChanged();
+    void                                RegisterServerListeningChangeCallback(NetServerCallback, void * new_callback_arg);
 
     void                                SetPort(unsigned short new_port);
 
@@ -60,10 +71,14 @@ public:
     void                                SendReply_ProtocolVersion(SOCKET client_sock);
 
     void                                SendRequest_DeviceListChanged(SOCKET client_sock);
+    void                                SendReply_ProfileList(SOCKET client_sock);
+
+    void                                SetProfileManager(ProfileManagerInterface* profile_manager_pointer);
 
 protected:
     unsigned short                      port_num;
     bool                                server_online;
+    bool                                server_listening;
 
     std::vector<RGBController *>&       controllers;
 
@@ -74,6 +89,12 @@ protected:
     std::mutex                          ClientInfoChangeMutex;
     std::vector<NetServerCallback>      ClientInfoChangeCallbacks;
     std::vector<void *>                 ClientInfoChangeCallbackArgs;
+
+    std::mutex                          ServerListeningChangeMutex;
+    std::vector<NetServerCallback>      ServerListeningChangeCallbacks;
+    std::vector<void *>                 ServerListeningChangeCallbackArgs;
+
+    ProfileManagerInterface*            profile_manager;
 
 private:
 #ifdef WIN32

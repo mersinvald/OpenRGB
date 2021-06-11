@@ -19,12 +19,12 @@ LogitechGProWirelessController::LogitechGProWirelessController(hid_device* dev_h
 
 LogitechGProWirelessController::~LogitechGProWirelessController()
 {
-    hid_close(dev);
+    delete lightspeed;
 }
 
 std::string LogitechGProWirelessController::GetDeviceLocation()
 {
-    return("HID: " + location);
+    return("HID: " + location + " (Receiver) \r\nWireless Index: " + std::to_string(lightspeed->device_index));
 }
 
 std::string LogitechGProWirelessController::GetSerialString()
@@ -49,51 +49,5 @@ void LogitechGProWirelessController::SendMouseMode
   //  unsigned char       brightness
     )
 {
-    unsigned char usb_buf[20];
-
-    /*-----------------------------------------------------*\
-    | Zero out buffer                                       |
-    \*-----------------------------------------------------*/
-    memset(usb_buf, 0x00, sizeof(usb_buf));
-
-    /*-----------------------------------------------------*\
-    | Set up Lighting Control packet                        |
-    \*-----------------------------------------------------*/
-    usb_buf[0x00]           = 0x11;
-    usb_buf[0x01]           = 0x01;
-    usb_buf[0x02]           = 0x07;
-    usb_buf[0x03]           = 0x3C;
-
-    usb_buf[0x04]           = zone;
-    usb_buf[0x05]           = mode;
-
-    usb_buf[0x06]           = red;
-    usb_buf[0x07]           = green;
-    usb_buf[0x08]           = blue;
-
-    speed = 100 * speed;
-    if(mode == LOGITECH_G_PRO_WIRELESS_MODE_STATIC)
-    {
-        usb_buf[0x09]       = 0x02;
-    }
-    if(mode == LOGITECH_G_PRO_WIRELESS_MODE_CYCLE)
-    {
-        usb_buf[0x0B]       = speed >> 8;
-        usb_buf[0x0C]       = speed & 0xFF;
-        //usb_buf[0x0D]       = brightness;
-        usb_buf[0x0D]       = 0x64;
-    }
-    else if(mode == LOGITECH_G_PRO_WIRELESS_MODE_BREATHING)
-    {
-        usb_buf[0x09]       = speed >> 8;
-        usb_buf[0x0A]       = speed & 0xFF;
-        //usb_buf[0x0C]       = brightness;
-        usb_buf[0x0C]       = 0x64;
-    }
-
-    /*-----------------------------------------------------*\
-    | Send packet                                           |
-    \*-----------------------------------------------------*/
-    hid_write(dev, usb_buf, 20);
-    hid_read(dev, usb_buf, 20);
+    lightspeed->setMode(mode, speed, zone, red, green, blue, 0x64);
 }

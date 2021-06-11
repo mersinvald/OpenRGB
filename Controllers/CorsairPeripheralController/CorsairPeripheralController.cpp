@@ -20,7 +20,7 @@ static unsigned int keys[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x
                               79,   80,   81,   84,   85,   86,   87,   88,   89,   90,   91,   92,   93,   96,   97,
                               98,   99,   100,  101,  102,  103,  104,  105,  108,  109,  110,  111,  112,  113,  115,
                               116,  117,  120,  121,  122,  123,  124,  126,  127,  128,  129,  132,  133,  134,  135,
-                              136,  137,  139,  140,  141};
+                              136,  137,  139,  140,  141, 0x10, 114};
 
 
 static unsigned int keys_k95_plat[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0C, 0x0D, 0x0E, 0x0F, 0x11, 0x12,
@@ -31,7 +31,7 @@ static unsigned int keys_k95_plat[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
                                        98,   99,   100,  101,  102,  103,  104,  105,  108,  109,  110,  111,  112,  113,  115,
                                        116,  117,  120,  121,  122,  123,  124,  126,  127,  128,  129,  132,  133,  134,  135,
                                        136,  137,  139,  140,  141,
-                                       0x10, 114, 0x0a, 0x16, 0x22, 0x2e, 0x3a, 0x46,
+                                       0x10, 114, 0x0a, 0x16, 0x22, 0x2e, 0x3a, 0x46,  125,
                                        144,  145,  146,  158,  160,  147,  148,  149,  150,  151,  152,  153,
                                        154,  155,  159,  162,  161,  156,  157};
 
@@ -48,6 +48,9 @@ static unsigned int keys_k95[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
 
 static unsigned int st100[] = { 0x00, 0x01, 0x02, 0x03, 0x05, 0x06, 0x07, 0x08, 0x04 };
 
+static unsigned int key_mapping_k95_plat_ansi[] = { 0x31, 0x3f, 0x41, 0x42, 0x51, 0x53, 0x55, 0x6f, 0x7e, 0x7f, 0x80, 0x81 };
+static unsigned int key_mapping_k95_plat_iso[] = { 0x3f, 0x41, 0x42, 0x48, 0x50, 0x53, 0x55, 0x6f, 0x7e, 0x7f, 0x80, 0x81 };
+
 CorsairPeripheralController::CorsairPeripheralController(hid_device* dev_handle, const char* path)
 {
     dev         = dev_handle;
@@ -55,15 +58,25 @@ CorsairPeripheralController::CorsairPeripheralController(hid_device* dev_handle,
 
     ReadFirmwareInfo();
 
+    /*-----------------------------------------------------*\
+    | K55 and K95 Platinum require additional steps         |
+    \*-----------------------------------------------------*/
+    if (logical_layout == CORSAIR_TYPE_K55 || logical_layout == CORSAIR_TYPE_K95_PLAT)
+    {
+        SpecialFunctionControl();
+    }
+
     LightingControl();
+
+    if (logical_layout == CORSAIR_TYPE_K55 || logical_layout == CORSAIR_TYPE_K95_PLAT)
+    {
+        SetupK55AndK95LightingControl();
+    }
 }
 
 CorsairPeripheralController::~CorsairPeripheralController()
 {
-    if(dev)
-    {
-        hid_close(dev);
-    }
+    hid_close(dev);
 }
 
 device_type CorsairPeripheralController::GetDeviceType()
@@ -112,7 +125,14 @@ void CorsairPeripheralController::SetLEDs(std::vector<RGBColor>colors)
     switch(type)
     {
         case DEVICE_TYPE_KEYBOARD:
-            SetLEDsKeyboardFull(colors);
+            if (logical_layout == CORSAIR_TYPE_K55)
+            {
+                SubmitKeyboardZonesColors(colors[0], colors[1], colors[2]);
+            }
+            else
+            {
+                SetLEDsKeyboardFull(colors);
+            }
             break;
 
         case DEVICE_TYPE_MOUSE:
@@ -150,6 +170,7 @@ void CorsairPeripheralController::SetLEDsKeyboardFull(std::vector<RGBColor> colo
     unsigned char red_val[168];
     unsigned char grn_val[168];
     unsigned char blu_val[168];
+    unsigned char data_sz = 24;
 
     /*-----------------------------------------------------*\
     | Zero out buffers                                      |
@@ -169,12 +190,14 @@ void CorsairPeripheralController::SetLEDsKeyboardFull(std::vector<RGBColor> colo
             red_val[keys_k95_plat[color_idx]] = RGBGetRValue(color);
             grn_val[keys_k95_plat[color_idx]] = RGBGetGValue(color);
             blu_val[keys_k95_plat[color_idx]] = RGBGetBValue(color);
+            data_sz = 48;
         }
         else if (logical_layout == CORSAIR_TYPE_K95)
         {
             red_val[keys_k95[color_idx]] = RGBGetRValue(color);
             grn_val[keys_k95[color_idx]] = RGBGetGValue(color);
             blu_val[keys_k95[color_idx]] = RGBGetBValue(color);
+            data_sz = 48; //untested
         }
         else
         {
@@ -189,7 +212,7 @@ void CorsairPeripheralController::SetLEDsKeyboardFull(std::vector<RGBColor> colo
     \*-----------------------------------------------------*/
     StreamPacket(1, 60, &red_val[0]);
     StreamPacket(2, 60, &red_val[60]);
-    StreamPacket(3, 48, &red_val[120]);
+    StreamPacket(3, data_sz, &red_val[120]);
     SubmitKeyboardFullColors(1, 3, 1);
 
     /*-----------------------------------------------------*\
@@ -197,7 +220,7 @@ void CorsairPeripheralController::SetLEDsKeyboardFull(std::vector<RGBColor> colo
     \*-----------------------------------------------------*/
     StreamPacket(1, 60, &grn_val[0]);
     StreamPacket(2, 60, &grn_val[60]);
-    StreamPacket(3, 48, &grn_val[120]);
+    StreamPacket(3, data_sz, &grn_val[120]);
     SubmitKeyboardFullColors(2, 3, 1);
 
     /*-----------------------------------------------------*\
@@ -205,7 +228,7 @@ void CorsairPeripheralController::SetLEDsKeyboardFull(std::vector<RGBColor> colo
     \*-----------------------------------------------------*/
     StreamPacket(1, 60, &blu_val[0]);
     StreamPacket(2, 60, &blu_val[60]);
-    StreamPacket(3, 48, &blu_val[120]);
+    StreamPacket(3, data_sz, &blu_val[120]);
     SubmitKeyboardFullColors(3, 3, 2);
 }
 
@@ -320,7 +343,7 @@ void CorsairPeripheralController::LightingControl()
     {
         default:
         case DEVICE_TYPE_KEYBOARD:
-            usb_buf[0x05]   = 0x03;
+            usb_buf[0x05]   = 0x03; // On K95 Platinum, this controls keyboard brightness
             break;
 
         case DEVICE_TYPE_MOUSE:
@@ -340,6 +363,80 @@ void CorsairPeripheralController::LightingControl()
     | Send packet                                           |
     \*-----------------------------------------------------*/
     hid_write(dev, (unsigned char *)usb_buf, 65);
+}
+
+/*-----------------------------------------------------*\
+| Probably a key mapping packet?                        |
+\*-----------------------------------------------------*/
+
+void CorsairPeripheralController::SetupK55AndK95LightingControl()
+{
+    char usb_buf[65];
+
+    /*-----------------------------------------------------*\
+    | Zero out buffer                                       |
+    \*-----------------------------------------------------*/
+    memset(usb_buf, 0x00, sizeof(usb_buf));
+
+    /*-----------------------------------------------------*\
+    | Set up a packet                                       |
+    \*-----------------------------------------------------*/
+    usb_buf[0x00]           = 0x00;
+    usb_buf[0x01]           = CORSAIR_COMMAND_WRITE;
+    usb_buf[0x02]           = CORSAIR_PROPERTY_LIGHTING_CONTROL;
+    usb_buf[0x03]           = 0x08;
+
+    usb_buf[0x05]           = 0x01;
+
+    /*-----------------------------------------------------*\
+    | Send packet                                           |
+    \*-----------------------------------------------------*/
+    hid_write(dev, (unsigned char *)usb_buf, 65);
+
+    unsigned int* skipped_identifiers = key_mapping_k95_plat_ansi;
+    int skipped_identifiers_count = sizeof(key_mapping_k95_plat_ansi) / sizeof(key_mapping_k95_plat_ansi[0]);
+    
+    if (physical_layout == CORSAIR_LAYOUT_ISO)
+    {
+        skipped_identifiers = key_mapping_k95_plat_iso;
+        skipped_identifiers_count = sizeof(key_mapping_k95_plat_iso) / sizeof(key_mapping_k95_plat_iso[0]);
+    }
+
+    unsigned int identifier = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        /*-----------------------------------------------------*\
+        | Zero out buffer                                       |
+        \*-----------------------------------------------------*/
+        memset(usb_buf, 0x00, sizeof(usb_buf));
+
+        /*-----------------------------------------------------*\
+        | Set up a packet - a sequence of 120 ids               |
+        \*-----------------------------------------------------*/
+        usb_buf[0x00]           = 0x00;
+        usb_buf[0x01]           = CORSAIR_COMMAND_WRITE;
+        usb_buf[0x02]           = 0x40;
+        usb_buf[0x03]           = 0x1E;
+
+        for (int j = 0; j < 30; j++)
+        {
+            for (int j = 0; j < skipped_identifiers_count; j++)
+            {
+                if (identifier == skipped_identifiers[j])
+                {
+                    identifier++;
+                }
+            }
+
+            usb_buf[5 + 2 * j]      = identifier++;
+            usb_buf[5 + 2 * j + 1]  = 0xC0;
+        }
+
+        /*-----------------------------------------------------*\
+        | Send packet                                           |
+        \*-----------------------------------------------------*/
+        hid_write(dev, (unsigned char *)usb_buf, 65);
+    }
 }
 
 void CorsairPeripheralController::SpecialFunctionControl()
@@ -364,7 +461,6 @@ void CorsairPeripheralController::SpecialFunctionControl()
     \*-----------------------------------------------------*/
     hid_write(dev, (unsigned char *)usb_buf, 65);
 }
-
 
 void CorsairPeripheralController::ReadFirmwareInfo()
 {
@@ -421,11 +517,14 @@ void CorsairPeripheralController::ReadFirmwareInfo()
     {
         case 0xC0:
             {
-                unsigned short pid = (unsigned short)(usb_buf[0x0F] << 8) + (unsigned char)(usb_buf[0x0E]);
+                unsigned short pid = (unsigned short)(usb_buf[0x0E] << 8) + (unsigned char)(usb_buf[0x0F]);
 
+                /*-----------------------------------------------------*\
+                | Get the correct Keyboard Type                         |
+                \*-----------------------------------------------------*/
                 switch(pid)
                 {
-                    case 0x2D1B:
+                    case 0x1B2D:
                     logical_layout = CORSAIR_TYPE_K95_PLAT;
                     break;
 
@@ -433,9 +532,39 @@ void CorsairPeripheralController::ReadFirmwareInfo()
                     logical_layout = CORSAIR_TYPE_K95;
                     break;
 
+                    case 0x1B3D:
+                    logical_layout = CORSAIR_TYPE_K55;
+                    break;
+
                     default:
                     logical_layout = CORSAIR_TYPE_NORMAL;
                 }
+
+                /*-----------------------------------------------------*\
+                | Get the correct Keyboard Layout.                      |
+                | Currently unused but can be implemented in the future.|
+                \*-----------------------------------------------------*/
+                switch((unsigned char)usb_buf[0x17 + offset])
+                {
+                    case CORSAIR_LAYOUT_ANSI:
+                        physical_layout = CORSAIR_LAYOUT_ANSI;
+                        break;
+                    case CORSAIR_LAYOUT_ISO:
+                        physical_layout = CORSAIR_LAYOUT_ISO;
+                        break;
+                    case CORSAIR_LAYOUT_ABNT:
+                        physical_layout = CORSAIR_LAYOUT_ABNT;
+                        break;
+                    case CORSAIR_LAYOUT_JIS:
+                        physical_layout = CORSAIR_LAYOUT_JIS;
+                        break;
+                    case CORSAIR_LAYOUT_DUBEOLSIK:
+                        physical_layout = CORSAIR_LAYOUT_DUBEOLSIK;
+                        break;
+                    default:
+                        physical_layout = CORSAIR_LAYOUT_ANSI;
+                }
+
             }
             type = DEVICE_TYPE_KEYBOARD;
             break;
@@ -475,21 +604,6 @@ void CorsairPeripheralController::ReadFirmwareInfo()
     if(type != DEVICE_TYPE_UNKNOWN)
     {
         firmware_version = std::to_string(usb_buf[0x09 + offset]) + "." + std::to_string(usb_buf[0x08 + offset]);
-    }
-
-    /*-----------------------------------------------------*\
-    | Get the correct Keyboard Layout                       |
-    \*-----------------------------------------------------*/
-    switch((unsigned char)usb_buf[0x17 + offset])
-    {
-        case CORSAIR_LAYOUT_ANSI:
-            physical_layout = CORSAIR_LAYOUT_ANSI;
-            break;
-        case CORSAIR_LAYOUT_ISO:
-            physical_layout = CORSAIR_LAYOUT_ISO;
-            break;
-        default:
-            physical_layout = CORSAIR_LAYOUT_ANSI;
     }
 }
 
@@ -549,6 +663,44 @@ void CorsairPeripheralController::SubmitKeyboardFullColors
     usb_buf[0x03]   = color_channel;
     usb_buf[0x04]   = packet_count;
     usb_buf[0x05]   = finish_val;
+
+    /*-----------------------------------------------------*\
+    | Send packet                                           |
+    \*-----------------------------------------------------*/
+    hid_write(dev, (unsigned char *)usb_buf, 65);
+}
+
+void CorsairPeripheralController::SubmitKeyboardZonesColors
+    (
+    RGBColor left,
+    RGBColor mid,
+    RGBColor right
+    )
+{
+    char usb_buf[65];
+
+    /*-----------------------------------------------------*\
+    | Zero out buffer                                       |
+    \*-----------------------------------------------------*/
+    memset(usb_buf, 0x00, sizeof(usb_buf));
+
+    /*-----------------------------------------------------*\
+    | Set up Submit Keyboard 24-Bit Colors packet           |
+    \*-----------------------------------------------------*/
+    usb_buf[0x00]   = 0x00;
+    usb_buf[0x01]   = CORSAIR_COMMAND_WRITE;
+    usb_buf[0x02]   = CORSAIR_PROPERTY_SUBMIT_KBZONES_COLOR_24;
+    usb_buf[0x03]   = 0x00;
+    usb_buf[0x04]   = 0x00;
+    usb_buf[0x05]   = RGBGetRValue(left);
+    usb_buf[0x06]   = RGBGetGValue(left);
+    usb_buf[0x07]   = RGBGetBValue(left);
+    usb_buf[0x08]   = RGBGetRValue(mid);
+    usb_buf[0x09]   = RGBGetGValue(mid);
+    usb_buf[0x0A]   = RGBGetBValue(mid);
+    usb_buf[0x0B]   = RGBGetRValue(right);
+    usb_buf[0x0C]   = RGBGetGValue(right);
+    usb_buf[0x0D]   = RGBGetBValue(right);
 
     /*-----------------------------------------------------*\
     | Send packet                                           |

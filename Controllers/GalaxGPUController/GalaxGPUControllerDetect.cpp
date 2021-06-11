@@ -31,8 +31,9 @@ typedef struct
 
 static const gpu_pci_device device_list[] =
 {
-    { NVIDIA_VEN,   NVIDIA_RTX2070_DEV,     NVIDIA_SUB_VEN,     KFA2_RTX_2070_EX,               "KFA2 RTX 2070 EX"                      },
-    { NVIDIA_VEN,   NVIDIA_RTX2070S_DEV,    NVIDIA_SUB_VEN,     GALAX_RTX_2070S_EX_GAMER_BLACK, "GALAX RTX 2070 Super EX Gamer Black"   },
+    { NVIDIA_VEN,   NVIDIA_RTX2070_DEV,     NVIDIA_SUB_VEN,     KFA2_RTX_2070_EX_SUB_DEV,               "KFA2 RTX 2070 EX"                      },
+    { NVIDIA_VEN,   NVIDIA_RTX2070S_DEV,    NVIDIA_SUB_VEN,     GALAX_RTX_2070S_EX_GAMER_BLACK_SUB_DEV, "GALAX RTX 2070 Super EX Gamer Black"   },
+    { NVIDIA_VEN,   NVIDIA_RTX2080_DEV,     NVIDIA_SUB_VEN,     KFA2_RTX_2080_EX_OC_SUB_DEV,            "KFA2 RTX 2080 EX OC"                   },
 };
 /******************************************************************************************\
 *                                                                                          *
@@ -66,7 +67,7 @@ bool TestForGalaxGPUController(i2c_smbus_interface* bus, unsigned char address)
 *                                                                                          *
 \******************************************************************************************/
 
-void DetectGalaxGPUControllers(std::vector<i2c_smbus_interface*> &busses, std::vector<RGBController*> &rgb_controllers)
+void DetectGalaxGPUControllers(std::vector<i2c_smbus_interface*> &busses)
 {
     GalaxGPUController* new_GalaxGPU;
     RGBController_GalaxGPU* new_controller;
@@ -86,7 +87,7 @@ void DetectGalaxGPUControllers(std::vector<i2c_smbus_interface*> &busses, std::v
                     new_GalaxGPU         = new GalaxGPUController(busses[bus], 0x23);
                     new_controller       = new RGBController_GalaxGPU(new_GalaxGPU);
                     new_controller->name = device_list[dev_idx].name;
-                    rgb_controllers.push_back(new_controller);
+                    ResourceManager::get()->RegisterRGBController(new_controller);
                 }
             }
         }

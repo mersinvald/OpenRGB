@@ -8,6 +8,7 @@
 \*-----------------------------------------*/
 
 #include "RGBController.h"
+#include "LogitechProtocolCommon.h"
 
 #include <string>
 #include <hidapi/hidapi.h>
@@ -39,6 +40,8 @@ public:
     LogitechGProWirelessController(hid_device* dev_handle, const char* path);
     ~LogitechGProWirelessController();
 
+    logitech_device* lightspeed;
+    
     std::string GetDeviceLocation();
     std::string GetSerialString();
 

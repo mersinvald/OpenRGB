@@ -11,12 +11,19 @@ QT +=                                                                           
     core                                                                                        \
     gui                                                                                         \
 
+#-----------------------------------------------------------------------------------------------#
+# Set compiler to use C++17 to make std::filesystem available                                   #
+#-----------------------------------------------------------------------------------------------#
+CONFIG += c++17
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+greaterThan(QT_MAJOR_VERSION, 5): DEFINES += _QT6
 
 #-----------------------------------------------------------------------------------------------#
 # Application Configuration                                                                     #
 #-----------------------------------------------------------------------------------------------#
-VERSION     = 0.5
+VERSION     = 0.51
 TARGET      = OpenRGB
 TEMPLATE    = app
 
@@ -44,6 +51,7 @@ INCLUDEPATH +=                                                                  
     dependencies/CRCpp/                                                                         \
     dependencies/json/                                                                          \
     dependencies/libe131/src/                                                                   \
+    dependencies/libcmmk/include/                                                               \
     i2c_smbus/                                                                                  \
     i2c_tools/                                                                                  \
     net_port/                                                                                   \
@@ -52,6 +60,7 @@ INCLUDEPATH +=                                                                  
     super_io/                                                                                   \
     Controllers/AMDWraithPrismController/                                                       \
     Controllers/ASRockPolychromeSMBusController/                                                \
+    Controllers/ASRockPolychromeUSBController/                                                  \
     Controllers/AsusAuraCoreController/                                                         \
     Controllers/AsusAuraGPUController/                                                          \
     Controllers/AsusAuraSMBusController/                                                        \
@@ -59,30 +68,38 @@ INCLUDEPATH +=                                                                  
     Controllers/CoolerMasterController/                                                         \
     Controllers/CorsairDominatorPlatinumController/                                             \
     Controllers/CorsairHydroController/                                                         \
+    Controllers/CorsairHydroPlatinumController/                                                 \
     Controllers/CorsairPeripheralController/                                                    \
     Controllers/CorsairLightingNodeController/                                                  \
     Controllers/CorsairVengeanceController/                                                     \
     Controllers/CorsairVengeanceProController/                                                  \
+    Controllers/CorsairWirelessController/                                                      \
+    Controllers/CreativeController/                                                             \
     Controllers/CrucialController/                                                              \
+    Controllers/DasKeyboardController/                                                          \
     Controllers/DebugController/                                                                \
     Controllers/DuckyKeyboardController/                                                        \
     Controllers/E131Controller/                                                                 \
     Controllers/EKController/                                                                   \
     Controllers/EspurnaController/                                                              \
     Controllers/EVGAGPUController/                                                              \
+    Controllers/EVisionKeyboardController/                                                      \
+    Controllers/FanBusController/                                                               \
+    Controllers/GainwardGPUController/                                                          \
+    Controllers/GalaxGPUController/                                                             \
     Controllers/GigabyteAorusCPUCoolerController/                                               \
     Controllers/GigabyteRGBFusion2DRAMController/                                               \
     Controllers/GigabyteRGBFusion2SMBusController/                                              \
     Controllers/GigabyteRGBFusion2USBController/                                                \
     Controllers/GigabyteRGBFusionController/                                                    \
     Controllers/GigabyteRGBFusionGPUController/                                                 \
-    Controllers/GalaxGPUController/                                                             \
     Controllers/HoltekController/                                                               \
     Controllers/HyperXDRAMController/                                                           \
     Controllers/HyperXKeyboardController/                                                       \
     Controllers/HyperXMouseController/                                                          \
     Controllers/HyperXMousematController/                                                       \
     Controllers/LEDStripController/                                                             \
+    Controllers/LianLiController/                                                               \
     Controllers/LogitechController/                                                             \
     Controllers/MSI3ZoneController/                                                             \
     Controllers/MSIGPUController/                                                               \
@@ -94,6 +111,8 @@ INCLUDEPATH +=                                                                  
     Controllers/OpenRazerController/                                                            \
     Controllers/PatriotViperController/                                                         \
     Controllers/PhilipsWizController/                                                           \
+    Controllers/QMKOpenRGBController/                                                           \
+    Controllers/RazerController/                                                                \
     Controllers/RedragonController/                                                             \
     Controllers/RoccatController/                                                               \
     Controllers/SapphireGPUController/                                                          \
@@ -108,16 +127,22 @@ INCLUDEPATH +=                                                                  
     qt/
 
 HEADERS +=                                                                                      \
+    Controllers/LogitechController/LogitechProtocolCommon.h \
     dependencies/ColorWheel/ColorWheel.h                                                        \
     dependencies/json/json.hpp                                                                  \
+    dependencies/libcmmk/include/libcmmk/libcmmk.h                                              \
+    LogManager.h                                                                                \
     NetworkClient.h                                                                             \
     NetworkProtocol.h                                                                           \
     NetworkServer.h                                                                             \
+    OpenRGBPluginInterface.h                                                                    \
+    PluginManager.h                                                                             \
     ProfileManager.h                                                                            \
     ResourceManager.h                                                                           \
     SettingsManager.h                                                                           \
     Detector.h                                                                                  \
     DeviceDetector.h                                                                            \
+    filesystem.h                                                                                \
     qt/DetectorTableModel.h                                                                     \
     qt/OpenRGBClientInfoPage.h                                                                  \
     qt/OpenRGBDeviceInfoPage.h                                                                  \
@@ -129,8 +154,10 @@ HEADERS +=                                                                      
     pci_ids/pci_ids.h                                                                           \
     qt/DeviceView.h                                                                             \
     qt/OpenRGBDialog2.h                                                                         \
+    qt/OpenRGBPluginContainer.h                                                                 \
     qt/OpenRGBProfileSaveDialog.h                                                               \
     qt/OpenRGBServerInfoPage.h                                                                  \
+    qt/OpenRGBSettingsPage.h                                                                    \
     qt/OpenRGBSoftwareInfoPage.h                                                                \
     qt/OpenRGBSupportedDevicesPage.h                                                            \
     qt/OpenRGBSystemInfoPage.h                                                                  \
@@ -142,6 +169,8 @@ HEADERS +=                                                                      
     Controllers/AMDWraithPrismController/RGBController_AMDWraithPrism.h                         \
     Controllers/ASRockPolychromeSMBusController/ASRockPolychromeSMBusController.h               \
     Controllers/ASRockPolychromeSMBusController/RGBController_ASRockPolychromeSMBus.h           \
+    Controllers/ASRockPolychromeUSBController/ASRockPolychromeUSBController.h                   \
+    Controllers/ASRockPolychromeUSBController/RGBController_ASRockPolychromeUSB.h               \
     Controllers/AsusAuraCoreController/AsusAuraCoreController.h                                 \
     Controllers/AsusAuraCoreController/RGBController_AsusAuraCore.h                             \
     Controllers/AsusAuraGPUController/AsusAuraGPUController.h                                   \
@@ -150,18 +179,28 @@ HEADERS +=                                                                      
     Controllers/AsusAuraSMBusController/RGBController_AsusAuraSMBus.h                           \
     Controllers/AsusAuraUSBController/AsusAuraUSBController.h                                   \
     Controllers/AsusAuraUSBController/AsusAuraAddressableController.h                           \
+    Controllers/AsusAuraUSBController/AsusAuraKeyboardController.h                              \
     Controllers/AsusAuraUSBController/AsusAuraMainboardController.h                             \
     Controllers/AsusAuraUSBController/AsusAuraMouseController.h                                 \
+    Controllers/AsusAuraUSBController/RGBController_AsusAuraKeyboard.h                          \
     Controllers/AsusAuraUSBController/RGBController_AsusAuraMouse.h                             \
     Controllers/AsusAuraUSBController/RGBController_AsusAuraUSB.h                               \
     Controllers/CoolerMasterController/CMARGBcontroller.h                                       \
     Controllers/CoolerMasterController/CMMP750Controller.h                                      \
+    Controllers/CoolerMasterController/CMSmallARGBController.h                                  \
+    Controllers/CoolerMasterController/CMR6000Controller.h                                      \
+    Controllers/CoolerMasterController/CMMKController.h                                         \
     Controllers/CoolerMasterController/RGBController_CMARGBController.h                         \
     Controllers/CoolerMasterController/RGBController_CMMP750Controller.h                        \
+    Controllers/CoolerMasterController/RGBController_CMSmallARGBController.h                    \
+    Controllers/CoolerMasterController/RGBController_CMR6000Controller.h                        \
+    Controllers/CoolerMasterController/RGBController_CMMKController.h                           \
     Controllers/CorsairDominatorPlatinumController/CorsairDominatorPlatinumController.h         \
     Controllers/CorsairDominatorPlatinumController/RGBController_CorsairDominatorPlatinum.h     \
     Controllers/CorsairHydroController/CorsairHydroController.h                                 \
     Controllers/CorsairHydroController/RGBController_CorsairHydro.h                             \
+    Controllers/CorsairHydroPlatinumController/CorsairHydroPlatinumController.h                 \
+    Controllers/CorsairHydroPlatinumController/RGBController_CorsairHydroPlatinum.h             \
     Controllers/CorsairLightingNodeController/CorsairLightingNodeController.h                   \
     Controllers/CorsairLightingNodeController/RGBController_CorsairLightingNode.h               \
     Controllers/CorsairPeripheralController/CorsairPeripheralController.h                       \
@@ -170,8 +209,14 @@ HEADERS +=                                                                      
     Controllers/CorsairVengeanceController/RGBController_CorsairVengeance.h                     \
     Controllers/CorsairVengeanceProController/CorsairVengeanceProController.h                   \
     Controllers/CorsairVengeanceProController/RGBController_CorsairVengeancePro.h               \
+    Controllers/CorsairWirelessController/CorsairWirelessController.h                           \
+    Controllers/CorsairWirelessController/RGBController_CorsairWireless.h                       \
+    Controllers/CreativeController/CreativeSoundBlasterXG6Controller.h                          \
+    Controllers/CreativeController/RGBController_CreativeSoundBlasterXG6.h                      \
     Controllers/CrucialController/CrucialController.h                                           \
     Controllers/CrucialController/RGBController_Crucial.h                                       \
+    Controllers/DasKeyboardController/DasKeyboardController.h                                   \
+    Controllers/DasKeyboardController/RGBController_DasKeyboard.h                               \
     Controllers/DuckyKeyboardController/DuckyKeyboardController.h                               \
     Controllers/DuckyKeyboardController/RGBController_DuckyKeyboard.h                           \
     Controllers/DebugController/RGBController_Debug.h                                           \
@@ -184,6 +229,17 @@ HEADERS +=                                                                      
     Controllers/EVGAGPUController/EVGAGPUv2Controller.h                                         \
     Controllers/EVGAGPUController/RGBController_EVGAGPUv1.h                                     \
     Controllers/EVGAGPUController/RGBController_EVGAGPUv2.h                                     \
+    Controllers/EVisionKeyboardController/EVisionKeyboardController.h                           \
+    Controllers/EVisionKeyboardController/RGBController_EVisionKeyboard.h                       \
+    Controllers/FanBusController/FanBusController.h                                             \
+    Controllers/FanBusController/FanBusInterface.h                                              \
+    Controllers/FanBusController/RGBController_FanBus.h                                         \
+    Controllers/GainwardGPUController/GainwardGPUv1Controller.h                                 \
+    Controllers/GainwardGPUController/GainwardGPUv2Controller.h                                 \
+    Controllers/GainwardGPUController/RGBController_GainwardGPUv1.h                             \
+    Controllers/GainwardGPUController/RGBController_GainwardGPUv2.h                             \
+    Controllers/GalaxGPUController/GalaxGPUController.h                                         \
+    Controllers/GalaxGPUController/RGBController_GalaxGPU.h                                     \
     Controllers/GigabyteAorusCPUCoolerController/ATC800Controller.h                             \
     Controllers/GigabyteAorusCPUCoolerController/RGBController_AorusATC800.h                    \
     Controllers/GigabyteRGBFusion2DRAMController/GigabyteRGBFusion2DRAMController.h             \
@@ -196,44 +252,57 @@ HEADERS +=                                                                      
     Controllers/GigabyteRGBFusionController/RGBController_GigabyteRGBFusion.h                   \
     Controllers/GigabyteRGBFusionGPUController/GigabyteRGBFusionGPUController.h                 \
     Controllers/GigabyteRGBFusionGPUController/RGBController_GigabyteRGBFusionGPU.h             \
-    Controllers/GalaxGPUController/GalaxGPUController.h                                         \
-    Controllers/GalaxGPUController/RGBController_GalaxGPU.h                                     \
     Controllers/HoltekController/HoltekA070Controller.h                                         \
+    Controllers/HoltekController/HoltekA1FAController.h                                         \
     Controllers/HoltekController/RGBController_HoltekA070.h                                     \
+    Controllers/HoltekController/RGBController_HoltekA1FA.h                                     \
     Controllers/HyperXDRAMController/HyperXDRAMController.h                                     \
     Controllers/HyperXDRAMController/RGBController_HyperXDRAM.h                                 \
+    Controllers/HyperXKeyboardController/HyperXAlloyElite2Controller.h                          \
     Controllers/HyperXKeyboardController/HyperXAlloyOriginsController.h                         \
     Controllers/HyperXKeyboardController/HyperXKeyboardController.h                             \
+    Controllers/HyperXKeyboardController/RGBController_HyperXAlloyElite2.h                      \
     Controllers/HyperXKeyboardController/RGBController_HyperXAlloyOrigins.h                     \
     Controllers/HyperXKeyboardController/RGBController_HyperXKeyboard.h                         \
+    Controllers/HyperXMouseController/HyperXPulsefireFPSProController.h                         \
     Controllers/HyperXMouseController/HyperXPulsefireSurgeController.h                          \
+    Controllers/HyperXMouseController/HyperXPulsefireDartController.h                           \
+    Controllers/HyperXMouseController/RGBController_HyperXPulsefireFPSPro.h                     \
     Controllers/HyperXMouseController/RGBController_HyperXPulsefireSurge.h                      \
+    Controllers/HyperXMouseController/RGBController_HyperXPulsefireDart.h                       \
     Controllers/HyperXMousematController/HyperXMousematController.h                             \
     Controllers/HyperXMousematController/RGBController_HyperXMousemat.h                         \
     Controllers/LEDStripController/LEDStripController.h                                         \
     Controllers/LEDStripController/RGBController_LEDStrip.h                                     \
-    Controllers/LogitechController/LogitechG203Controller.h                                     \
+    Controllers/LianLiController/LianLiUniHubController.h                                       \
+    Controllers/LianLiController/RGBController_LianLiUniHub.h                                   \
     Controllers/LogitechController/LogitechG203LController.h                                    \
-    Controllers/LogitechController/LogitechG403Controller.h                                     \
-    Controllers/LogitechController/LogitechG502PSController.h                                   \
-    Controllers/LogitechController/LogitechG810Controller.h                                     \
     Controllers/LogitechController/LogitechG213Controller.h                                     \
-    Controllers/LogitechController/LogitechGPowerPlayController.h                               \
+    Controllers/LogitechController/LogitechG560Controller.h                                     \
+    Controllers/LogitechController/LogitechG810Controller.h                                     \
+    Controllers/LogitechController/LogitechG910Controller.h                                     \
+    Controllers/LogitechController/LogitechG815Controller.h                                     \
+    Controllers/LogitechController/LogitechGLightsyncController.h                               \
     Controllers/LogitechController/LogitechGProWirelessController.h                             \
-    Controllers/LogitechController/RGBController_LogitechG203.h                                 \
     Controllers/LogitechController/RGBController_LogitechG203L.h                                \
-    Controllers/LogitechController/RGBController_LogitechG403.h                                 \
-    Controllers/LogitechController/RGBController_LogitechG502PS.h                               \
-    Controllers/LogitechController/RGBController_LogitechG810.h                                 \
     Controllers/LogitechController/RGBController_LogitechG213.h                                 \
+    Controllers/LogitechController/RGBController_LogitechG560.h                                 \
+    Controllers/LogitechController/RGBController_LogitechG810.h                                 \
+    Controllers/LogitechController/RGBController_LogitechG910.h                                 \
+    Controllers/LogitechController/RGBController_LogitechG815.h                                 \
+    Controllers/LogitechController/RGBController_LogitechGLightsync.h                           \
+    Controllers/LogitechController/RGBController_LogitechGLightsync1zone.h                      \
     Controllers/LogitechController/RGBController_LogitechGPowerPlay.h                           \
     Controllers/LogitechController/RGBController_LogitechGProWireless.h                         \
     Controllers/MSI3ZoneController/MSI3ZoneController.h                                         \
     Controllers/MSI3ZoneController/RGBController_MSI3Zone.h                                     \
     Controllers/MSIGPUController/MSIGPUController.h                                             \
     Controllers/MSIGPUController/RGBController_MSIGPU.h                                         \
-    Controllers/MSIMysticLightController/MSIMysticLightController.h                             \
-    Controllers/MSIMysticLightController/RGBController_MSIMysticLight.h                         \
+    Controllers/MSIMysticLightController/MSIMysticLightCommon.h                                 \
+    Controllers/MSIMysticLightController/MSIMysticLight162Controller.h                          \
+    Controllers/MSIMysticLightController/MSIMysticLight185Controller.h                          \
+    Controllers/MSIMysticLightController/RGBController_MSIMysticLight162.h                      \
+    Controllers/MSIMysticLightController/RGBController_MSIMysticLight185.h                      \
     Controllers/MSIRGBController/MSIRGBController.h                                             \
     Controllers/MSIRGBController/RGBController_MSIRGB.h                                         \
     Controllers/NZXTHue2Controller/NZXTHue2Controller.h                                         \
@@ -247,14 +316,22 @@ HEADERS +=                                                                      
     Controllers/PatriotViperController/RGBController_PatriotViper.h                             \
     Controllers/PhilipsWizController/PhilipsWizController.h                                     \
     Controllers/PhilipsWizController/RGBController_PhilipsWiz.h                                 \
-    Controllers/RedragonController/RedragonK556Controller.h                                     \
+    Controllers/QMKOpenRGBController/QMKOpenRGBController.h                                     \
+    Controllers/QMKOpenRGBController/RGBController_QMKOpenRGB.h                                 \
+    Controllers/RazerController/RazerController.h                                               \
+    Controllers/RazerController/RazerKrakenController.h                                         \
+    Controllers/RazerController/RazerDevices.h                                                  \
+    Controllers/RazerController/RGBController_Razer.h                                           \
+    Controllers/RazerController/RGBController_RazerAddressable.h                                \
+    Controllers/RazerController/RGBController_RazerKraken.h                                     \
     Controllers/RedragonController/RedragonM711Controller.h                                     \
-    Controllers/RedragonController/RGBController_RedragonK556.h                                 \
     Controllers/RedragonController/RGBController_RedragonM711.h                                 \
     Controllers/RoccatController/RGBController_RoccatKoneAimo.h                                 \
     Controllers/RoccatController/RoccatKoneAimoController.h                                     \
-    Controllers/SapphireGPUController/SapphireGPUController.h                                   \
-    Controllers/SapphireGPUController/RGBController_SapphireGPU.h                               \
+    Controllers/SapphireGPUController/SapphireNitroGlowV1Controller.h                           \
+    Controllers/SapphireGPUController/SapphireNitroGlowV3Controller.h                           \
+    Controllers/SapphireGPUController/RGBController_SapphireNitroGlowV1.h                       \
+    Controllers/SapphireGPUController/RGBController_SapphireNitroGlowV3.h                       \
     Controllers/SinowealthController/SinowealthController.h                                     \
     Controllers/SinowealthController/RGBController_Sinowealth.h                                 \
     Controllers/SonyDS4Controller/SonyDS4Controller.h                                           \
@@ -266,35 +343,50 @@ HEADERS +=                                                                      
     Controllers/SteelSeriesController/SteelSeriesGeneric.h                                      \
     Controllers/SteelSeriesController/SteelSeriesOldApexController.h                            \
     Controllers/SteelSeriesController/SteelSeriesRivalController.h                              \
+    Controllers/SteelSeriesController/SteelSeriesSenseiController.h                             \
     Controllers/SteelSeriesController/SteelSeriesSiberiaController.h                            \
+    Controllers/SteelSeriesController/SteelSeriesQCKMatController.h                             \
     Controllers/SteelSeriesController/RGBController_SteelSeriesApex.h                           \
     Controllers/SteelSeriesController/RGBController_SteelSeriesOldApex.h                        \
     Controllers/SteelSeriesController/RGBController_SteelSeriesRival.h                          \
     Controllers/SteelSeriesController/RGBController_SteelSeriesSiberia.h                        \
+    Controllers/SteelSeriesController/RGBController_SteelSeriesQCKMat.h                         \
+    Controllers/SteelSeriesController/RGBController_SteelSeriesSensei.h                         \
     Controllers/TecknetController/TecknetController.h                                           \
     Controllers/TecknetController/RGBController_Tecknet.h                                       \
     Controllers/ThermaltakePoseidonZRGBController/ThermaltakePoseidonZRGBController.h           \
     Controllers/ThermaltakePoseidonZRGBController/RGBController_ThermaltakePoseidonZRGB.h       \
     Controllers/ThermaltakeRiingController/ThermaltakeRiingController.h                         \
+    Controllers/ThermaltakeRiingController/ThermaltakeRiingQuadController.h                     \
     Controllers/ThermaltakeRiingController/RGBController_ThermaltakeRiing.h                     \
     Controllers/MoonlanderController/MoonlanderController.h                         \
     Controllers/MoonlanderController/RGBController_Moonlander.h                     \
+    Controllers/WootingKeyboardController/WootingKeyboardController.h                           \
+    Controllers/WootingKeyboardController/RGBController_WootingKeyboard.h                       \
+    Controllers/ThermaltakeRiingController/RGBController_ThermaltakeRiingQuad.h                 \
+    Controllers/YeelightController/YeelightController.h                                         \
+    Controllers/YeelightController/RGBController_Yeelight.h                                     \
+    Controllers/ZalmanZSyncController/ZalmanZSyncController.h                                   \
+    Controllers/ZalmanZSyncController/RGBController_ZalmanZSync.h                               \
     RGBController/RGBController.h                                                               \
     RGBController/RGBController_Dummy.h                                                         \
     RGBController/RGBController_Network.h                                                       \
-
 
 SOURCES +=                                                                                      \
     Controllers/MoonlanderController/MoonlanderController.cpp \
     Controllers/MoonlanderController/MoonlanderControllerDetect.cpp \
     Controllers/MoonlanderController/RGBController_Moonlander.cpp \
+    Controllers/LogitechController/LogitechProtocolCommon.cpp \
     dependencies/dmiinfo.cpp                                                                    \
     dependencies/ColorWheel/ColorWheel.cpp                                                      \
     dependencies/libe131/src/e131.c                                                             \
+    dependencies/libcmmk/src/libcmmk.c                                                          \
     main.cpp                                                                                    \
     cli.cpp                                                                                     \
+    LogManager.cpp                                                                              \
     NetworkClient.cpp                                                                           \
     NetworkServer.cpp                                                                           \
+    PluginManager.cpp                                                                           \
     ProfileManager.cpp                                                                          \
     ResourceManager.cpp                                                                         \
     SettingsManager.cpp                                                                         \
@@ -308,8 +400,10 @@ SOURCES +=                                                                      
     net_port/net_port.cpp                                                                       \
     qt/DeviceView.cpp                                                                           \
     qt/OpenRGBDialog2.cpp                                                                       \
+    qt/OpenRGBPluginContainer.cpp                                                               \
     qt/OpenRGBProfileSaveDialog.cpp                                                             \
     qt/OpenRGBServerInfoPage.cpp                                                                \
+    qt/OpenRGBSettingsPage.cpp                                                                  \
     qt/OpenRGBSoftwareInfoPage.cpp                                                              \
     qt/OpenRGBSupportedDevicesPage.cpp                                                          \
     qt/OpenRGBSystemInfoPage.cpp                                                                \
@@ -323,6 +417,9 @@ SOURCES +=                                                                      
     Controllers/ASRockPolychromeSMBusController/ASRockPolychromeSMBusController.cpp             \
     Controllers/ASRockPolychromeSMBusController/ASRockPolychromeSMBusControllerDetect.cpp       \
     Controllers/ASRockPolychromeSMBusController/RGBController_ASRockPolychromeSMBus.cpp         \
+    Controllers/ASRockPolychromeUSBController/ASRockPolychromeUSBController.cpp                 \
+    Controllers/ASRockPolychromeUSBController/ASRockPolychromeUSBControllerDetect.cpp           \
+    Controllers/ASRockPolychromeUSBController/RGBController_ASRockPolychromeUSB.cpp             \
     Controllers/AsusAuraCoreController/AsusAuraCoreController.cpp                               \
     Controllers/AsusAuraCoreController/AsusAuraCoreControllerDetect.cpp                         \
     Controllers/AsusAuraCoreController/RGBController_AsusAuraCore.cpp                           \
@@ -334,22 +431,33 @@ SOURCES +=                                                                      
     Controllers/AsusAuraSMBusController/RGBController_AsusAuraSMBus.cpp                         \
     Controllers/AsusAuraUSBController/AsusAuraUSBController.cpp                                 \
     Controllers/AsusAuraUSBController/AsusAuraAddressableController.cpp                         \
+    Controllers/AsusAuraUSBController/AsusAuraKeyboardController.cpp                            \
     Controllers/AsusAuraUSBController/AsusAuraMainboardController.cpp                           \
     Controllers/AsusAuraUSBController/AsusAuraMouseController.cpp                               \
     Controllers/AsusAuraUSBController/AsusAuraUSBControllerDetect.cpp                           \
+    Controllers/AsusAuraUSBController/RGBController_AsusAuraKeyboard.cpp                        \
     Controllers/AsusAuraUSBController/RGBController_AsusAuraMouse.cpp                           \
     Controllers/AsusAuraUSBController/RGBController_AsusAuraUSB.cpp                             \
     Controllers/CoolerMasterController/CMARGBcontroller.cpp                                     \
     Controllers/CoolerMasterController/CMMP750Controller.cpp                                    \
+    Controllers/CoolerMasterController/CMSmallARGBController.cpp                                \
+    Controllers/CoolerMasterController/CMR6000Controller.cpp                                    \
+    Controllers/CoolerMasterController/CMMKController.cpp                                       \
     Controllers/CoolerMasterController/CoolerMasterControllerDetect.cpp                         \
     Controllers/CoolerMasterController/RGBController_CMARGBController.cpp                       \
     Controllers/CoolerMasterController/RGBController_CMMP750Controller.cpp                      \
+    Controllers/CoolerMasterController/RGBController_CMSmallARGBController.cpp                  \
+    Controllers/CoolerMasterController/RGBController_CMR6000Controller.cpp                      \
+    Controllers/CoolerMasterController/RGBController_CMMKController.cpp                         \
     Controllers/CorsairDominatorPlatinumController/CorsairDominatorPlatinumController.cpp       \
     Controllers/CorsairDominatorPlatinumController/CorsairDominatorPlatinumControllerDetect.cpp \
     Controllers/CorsairDominatorPlatinumController/RGBController_CorsairDominatorPlatinum.cpp   \
     Controllers/CorsairHydroController/CorsairHydroController.cpp                               \
     Controllers/CorsairHydroController/CorsairHydroControllerDetect.cpp                         \
     Controllers/CorsairHydroController/RGBController_CorsairHydro.cpp                           \
+    Controllers/CorsairHydroPlatinumController/CorsairHydroPlatinumController.cpp               \
+    Controllers/CorsairHydroPlatinumController/CorsairHydroPlatinumControllerDetect.cpp         \
+    Controllers/CorsairHydroPlatinumController/RGBController_CorsairHydroPlatinum.cpp           \
     Controllers/CorsairLightingNodeController/CorsairLightingNodeController.cpp                 \
     Controllers/CorsairLightingNodeController/CorsairLightingNodeControllerDetect.cpp           \
     Controllers/CorsairLightingNodeController/RGBController_CorsairLightingNode.cpp             \
@@ -362,10 +470,19 @@ SOURCES +=                                                                      
     Controllers/CorsairVengeanceProController/CorsairVengeanceProController.cpp                 \
     Controllers/CorsairVengeanceProController/CorsairVengeanceProControllerDetect.cpp           \
     Controllers/CorsairVengeanceProController/RGBController_CorsairVengeancePro.cpp             \
+    Controllers/CorsairWirelessController/CorsairWirelessController.cpp                         \
+    Controllers/CorsairWirelessController/CorsairWirelessControllerDetect.cpp                   \
+    Controllers/CorsairWirelessController/RGBController_CorsairWireless.cpp                     \
+    Controllers/CreativeController/CreativeSoundBlasterXG6Controller.cpp                        \
+    Controllers/CreativeController/CreativeControllerDetect.cpp                                 \
+    Controllers/CreativeController/RGBController_CreativeSoundBlasterXG6.cpp                    \
     Controllers/CrucialController/CrucialController.cpp                                         \
     Controllers/CrucialController/CrucialControllerDetect.cpp                                   \
     Controllers/CrucialController/RGBController_Crucial.cpp                                     \
     Controllers/DebugController/DebugControllerDetect.cpp                                       \
+    Controllers/DasKeyboardController/DasKeyboardController.cpp                                 \
+    Controllers/DasKeyboardController/DasKeyboardControllerDetect.cpp                           \
+    Controllers/DasKeyboardController/RGBController_DasKeyboard.cpp                             \
     Controllers/DuckyKeyboardController/DuckyKeyboardController.cpp                             \
     Controllers/DuckyKeyboardController/DuckyKeyboardControllerDetect.cpp                       \
     Controllers/DuckyKeyboardController/RGBController_DuckyKeyboard.cpp                         \
@@ -383,6 +500,21 @@ SOURCES +=                                                                      
     Controllers/EVGAGPUController/EVGAGPUControllerDetect.cpp                                   \
     Controllers/EVGAGPUController/RGBController_EVGAGPUv1.cpp                                   \
     Controllers/EVGAGPUController/RGBController_EVGAGPUv2.cpp                                   \
+    Controllers/EVisionKeyboardController/EVisionKeyboardController.cpp                         \
+    Controllers/EVisionKeyboardController/EVisionKeyboardControllerDetect.cpp                   \
+    Controllers/EVisionKeyboardController/RGBController_EVisionKeyboard.cpp                     \
+    Controllers/FanBusController/FanBusController.cpp                                           \
+    Controllers/FanBusController/FanBusControllerDetect.cpp                                     \
+    Controllers/FanBusController/FanBusInterface.cpp                                            \
+    Controllers/FanBusController/RGBController_FanBus.cpp                                       \
+    Controllers/GainwardGPUController/GainwardGPUControllerDetect.cpp                           \
+    Controllers/GainwardGPUController/GainwardGPUv1Controller.cpp                               \
+    Controllers/GainwardGPUController/GainwardGPUv2Controller.cpp                               \
+    Controllers/GainwardGPUController/RGBController_GainwardGPUv1.cpp                           \
+    Controllers/GainwardGPUController/RGBController_GainwardGPUv2.cpp                           \
+    Controllers/GalaxGPUController/GalaxGPUController.cpp                                       \
+    Controllers/GalaxGPUController/GalaxGPUControllerDetect.cpp                                 \
+    Controllers/GalaxGPUController/RGBController_GalaxGPU.cpp                                   \
     Controllers/GigabyteAorusCPUCoolerController/ATC800Controller.cpp                           \
     Controllers/GigabyteAorusCPUCoolerController/GigabyteAorusCPUCoolerControllerDetect.cpp     \
     Controllers/GigabyteAorusCPUCoolerController/RGBController_AorusATC800.cpp                  \
@@ -401,44 +533,54 @@ SOURCES +=                                                                      
     Controllers/GigabyteRGBFusionGPUController/GigabyteRGBFusionGPUController.cpp               \
     Controllers/GigabyteRGBFusionGPUController/GigabyteRGBFusionGPUControllerDetect.cpp         \
     Controllers/GigabyteRGBFusionGPUController/RGBController_GigabyteRGBFusionGPU.cpp           \
-    Controllers/GalaxGPUController/GalaxGPUController.cpp                                       \
-    Controllers/GalaxGPUController/GalaxGPUControllerDetect.cpp                                 \
-    Controllers/GalaxGPUController/RGBController_GalaxGPU.cpp                                   \
     Controllers/HoltekController/HoltekA070Controller.cpp                                       \
+    Controllers/HoltekController/HoltekA1FAController.cpp                                       \
     Controllers/HoltekController/HoltekControllerDetect.cpp                                     \
     Controllers/HoltekController/RGBController_HoltekA070.cpp                                   \
+    Controllers/HoltekController/RGBController_HoltekA1FA.cpp                                   \
     Controllers/HyperXDRAMController/HyperXDRAMController.cpp                                   \
     Controllers/HyperXDRAMController/HyperXDRAMControllerDetect.cpp                             \
     Controllers/HyperXDRAMController/RGBController_HyperXDRAM.cpp                               \
+    Controllers/HyperXKeyboardController/HyperXAlloyElite2Controller.cpp                        \
     Controllers/HyperXKeyboardController/HyperXAlloyOriginsController.cpp                       \
     Controllers/HyperXKeyboardController/HyperXKeyboardController.cpp                           \
     Controllers/HyperXKeyboardController/HyperXKeyboardControllerDetect.cpp                     \
+    Controllers/HyperXKeyboardController/RGBController_HyperXAlloyElite2.cpp                    \
     Controllers/HyperXKeyboardController/RGBController_HyperXAlloyOrigins.cpp                   \
     Controllers/HyperXKeyboardController/RGBController_HyperXKeyboard.cpp                       \
     Controllers/HyperXMouseController/HyperXMouseControllerDetect.cpp                           \
+    Controllers/HyperXMouseController/HyperXPulsefireFPSProController.cpp                       \
     Controllers/HyperXMouseController/HyperXPulsefireSurgeController.cpp                        \
+    Controllers/HyperXMouseController/HyperXPulsefireDartController.cpp                         \
+    Controllers/HyperXMouseController/RGBController_HyperXPulsefireFPSPro.cpp                   \
     Controllers/HyperXMouseController/RGBController_HyperXPulsefireSurge.cpp                    \
+    Controllers/HyperXMouseController/RGBController_HyperXPulsefireDart.cpp                     \
     Controllers/HyperXMousematController/HyperXMousematController.cpp                           \
     Controllers/HyperXMousematController/HyperXMousematControllerDetect.cpp                     \
     Controllers/HyperXMousematController/RGBController_HyperXMousemat.cpp                       \
     Controllers/LEDStripController/LEDStripController.cpp                                       \
     Controllers/LEDStripController/LEDStripControllerDetect.cpp                                 \
     Controllers/LEDStripController/RGBController_LEDStrip.cpp                                   \
+    Controllers/LianLiController/LianLiControllerDetect.cpp                                     \
+    Controllers/LianLiController/LianLiUniHubController.cpp                                     \
+    Controllers/LianLiController/RGBController_LianLiUniHub.cpp                                 \
     Controllers/LogitechController/LogitechControllerDetect.cpp                                 \
-    Controllers/LogitechController/LogitechG203Controller.cpp                                   \
     Controllers/LogitechController/LogitechG203LController.cpp                                  \
-    Controllers/LogitechController/LogitechG403Controller.cpp                                   \
-    Controllers/LogitechController/LogitechG502PSController.cpp                                 \
-    Controllers/LogitechController/LogitechG810Controller.cpp                                   \
     Controllers/LogitechController/LogitechG213Controller.cpp                                   \
-    Controllers/LogitechController/LogitechGPowerPlayController.cpp                             \
+    Controllers/LogitechController/LogitechG560Controller.cpp                                   \
+    Controllers/LogitechController/LogitechG810Controller.cpp                                   \
+    Controllers/LogitechController/LogitechG910Controller.cpp                                   \
+    Controllers/LogitechController/LogitechG815Controller.cpp                                   \
+    Controllers/LogitechController/LogitechGLightsyncController.cpp                             \
     Controllers/LogitechController/LogitechGProWirelessController.cpp                           \
-    Controllers/LogitechController/RGBController_LogitechG203.cpp                               \
     Controllers/LogitechController/RGBController_LogitechG203L.cpp                              \
-    Controllers/LogitechController/RGBController_LogitechG403.cpp                               \
-    Controllers/LogitechController/RGBController_LogitechG502PS.cpp                             \
-    Controllers/LogitechController/RGBController_LogitechG810.cpp                               \
     Controllers/LogitechController/RGBController_LogitechG213.cpp                               \
+    Controllers/LogitechController/RGBController_LogitechG560.cpp                               \
+    Controllers/LogitechController/RGBController_LogitechG810.cpp                               \
+    Controllers/LogitechController/RGBController_LogitechG910.cpp                               \
+    Controllers/LogitechController/RGBController_LogitechG815.cpp                               \
+    Controllers/LogitechController/RGBController_LogitechGLightsync.cpp                         \
+    Controllers/LogitechController/RGBController_LogitechGLightsync1zone.cpp                    \
     Controllers/LogitechController/RGBController_LogitechGPowerPlay.cpp                         \
     Controllers/LogitechController/RGBController_LogitechGProWireless.cpp                       \
     Controllers/MSI3ZoneController/MSI3ZoneController.cpp                                       \
@@ -447,9 +589,11 @@ SOURCES +=                                                                      
     Controllers/MSIGPUController/MSIGPUController.cpp                                           \
     Controllers/MSIGPUController/MSIGPUControllerDetect.cpp                                     \
     Controllers/MSIGPUController/RGBController_MSIGPU.cpp                                       \
-    Controllers/MSIMysticLightController/MSIMysticLightController.cpp                           \
+    Controllers/MSIMysticLightController/MSIMysticLight162Controller.cpp                        \
+    Controllers/MSIMysticLightController/MSIMysticLight185Controller.cpp                        \
     Controllers/MSIMysticLightController/MSIMysticLightControllerDetect.cpp                     \
-    Controllers/MSIMysticLightController/RGBController_MSIMysticLight.cpp                       \
+    Controllers/MSIMysticLightController/RGBController_MSIMysticLight162.cpp                    \
+    Controllers/MSIMysticLightController/RGBController_MSIMysticLight185.cpp                    \
     Controllers/MSIRGBController/MSIRGBController.cpp                                           \
     Controllers/MSIRGBController/MSIRGBControllerDetect.cpp                                     \
     Controllers/MSIRGBController/RGBController_MSIRGB.cpp                                       \
@@ -468,17 +612,26 @@ SOURCES +=                                                                      
     Controllers/PhilipsWizController/PhilipsWizController.cpp                                   \
     Controllers/PhilipsWizController/PhilipsWizControllerDetect.cpp                             \
     Controllers/PhilipsWizController/RGBController_PhilipsWiz.cpp                               \
-    Controllers/RedragonController/RedragonK556Controller.cpp                                   \
+    Controllers/QMKOpenRGBController/QMKOpenRGBControllerDetect.cpp                             \
+    Controllers/QMKOpenRGBController/QMKOpenRGBController.cpp                                   \
+    Controllers/QMKOpenRGBController/RGBController_QMKOpenRGB.cpp                               \
+    Controllers/RazerController/RazerController.cpp                                             \
+    Controllers/RazerController/RazerKrakenController.cpp                                       \
+    Controllers/RazerController/RazerControllerDetect.cpp                                       \
+    Controllers/RazerController/RGBController_Razer.cpp                                         \
+    Controllers/RazerController/RGBController_RazerAddressable.cpp                              \
+    Controllers/RazerController/RGBController_RazerKraken.cpp                                   \
     Controllers/RedragonController/RedragonM711Controller.cpp                                   \
     Controllers/RedragonController/RedragonControllerDetect.cpp                                 \
-    Controllers/RedragonController/RGBController_RedragonK556.cpp                               \
     Controllers/RedragonController/RGBController_RedragonM711.cpp                               \
     Controllers/RoccatController/RGBController_RoccatKoneAimo.cpp                               \
     Controllers/RoccatController/RoccatKoneAimoController.cpp                                   \
     Controllers/RoccatController/RoccatControllerDetect.cpp                                     \
-    Controllers/SapphireGPUController/SapphireGPUController.cpp                                 \
+    Controllers/SapphireGPUController/SapphireNitroGlowV1Controller.cpp                         \
+    Controllers/SapphireGPUController/SapphireNitroGlowV3Controller.cpp                         \
     Controllers/SapphireGPUController/SapphireGPUControllerDetect.cpp                           \
-    Controllers/SapphireGPUController/RGBController_SapphireGPU.cpp                             \
+    Controllers/SapphireGPUController/RGBController_SapphireNitroGlowV1.cpp                     \
+    Controllers/SapphireGPUController/RGBController_SapphireNitroGlowV3.cpp                     \
     Controllers/SinowealthController/SinowealthController.cpp                                   \
     Controllers/SinowealthController/SinowealthControllerDetect.cpp                             \
     Controllers/SinowealthController/RGBController_Sinowealth.cpp                               \
@@ -489,12 +642,16 @@ SOURCES +=                                                                      
     Controllers/SteelSeriesController/SteelSeriesApexMController.cpp                            \
     Controllers/SteelSeriesController/SteelSeriesOldApexController.cpp                          \
     Controllers/SteelSeriesController/SteelSeriesRivalController.cpp                            \
+    Controllers/SteelSeriesController/SteelSeriesSenseiController.cpp                           \
     Controllers/SteelSeriesController/SteelSeriesSiberiaController.cpp                          \
+    Controllers/SteelSeriesController/SteelSeriesQCKMatController.cpp                           \
     Controllers/SteelSeriesController/SteelSeriesControllerDetect.cpp                           \
     Controllers/SteelSeriesController/RGBController_SteelSeriesApex.cpp                         \
     Controllers/SteelSeriesController/RGBController_SteelSeriesOldApex.cpp                      \
     Controllers/SteelSeriesController/RGBController_SteelSeriesRival.cpp                        \
+    Controllers/SteelSeriesController/RGBController_SteelSeriesSensei.cpp                       \
     Controllers/SteelSeriesController/RGBController_SteelSeriesSiberia.cpp                      \
+    Controllers/SteelSeriesController/RGBController_SteelSeriesQCKMat.cpp                       \
     Controllers/TecknetController/TecknetController.cpp                                         \
     Controllers/TecknetController/TecknetControllerDetect.cpp                                   \
     Controllers/TecknetController/RGBController_Tecknet.cpp                                     \
@@ -502,8 +659,19 @@ SOURCES +=                                                                      
     Controllers/ThermaltakePoseidonZRGBController/ThermaltakePoseidonZRGBControllerDetect.cpp   \
     Controllers/ThermaltakePoseidonZRGBController/RGBController_ThermaltakePoseidonZRGB.cpp     \
     Controllers/ThermaltakeRiingController/ThermaltakeRiingController.cpp                       \
+    Controllers/ThermaltakeRiingController/ThermaltakeRiingQuadController.cpp                   \
     Controllers/ThermaltakeRiingController/ThermaltakeRiingControllerDetect.cpp                 \
     Controllers/ThermaltakeRiingController/RGBController_ThermaltakeRiing.cpp                   \
+    Controllers/WootingKeyboardController/WootingKeyboardController.cpp                         \
+    Controllers/WootingKeyboardController/WootingKeyboardControllerDetect.cpp                   \
+    Controllers/WootingKeyboardController/RGBController_WootingKeyboard.cpp                     \
+    Controllers/ThermaltakeRiingController/RGBController_ThermaltakeRiingQuad.cpp               \
+    Controllers/YeelightController/YeelightController.cpp                                       \
+    Controllers/YeelightController/YeelightControllerDetect.cpp                                 \
+    Controllers/YeelightController/RGBController_Yeelight.cpp                                   \
+    Controllers/ZalmanZSyncController/ZalmanZSyncController.cpp                                 \
+    Controllers/ZalmanZSyncController/ZalmanZSyncControllerDetect.cpp                           \
+    Controllers/ZalmanZSyncController/RGBController_ZalmanZSync.cpp                             \
     RGBController/RGBController.cpp                                                             \
     RGBController/RGBController_Dummy.cpp                                                       \
     RGBController/RGBController_Network.cpp                                                     \
@@ -517,8 +685,10 @@ FORMS +=                                                                        
     qt/OpenRGBDevicePage.ui                                                                     \
     qt/OpenRGBDialog.ui                                                                         \
     qt/OpenRGBDialog2.ui                                                                        \
+    qt/OpenRGBPluginContainer.ui                                                                \
     qt/OpenRGBProfileSaveDialog.ui                                                              \
     qt/OpenRGBServerInfoPage.ui                                                                 \
+    qt/OpenRGBSettingsPage.ui                                                                   \
     qt/OpenRGBSoftwareInfoPage.ui                                                               \
     qt/OpenRGBSupportedDevicesPage.ui                                                           \
     qt/OpenRGBSystemInfoPage.ui                                                                 \
@@ -656,7 +826,6 @@ unix:!macx {
     Controllers/LinuxLEDController/RGBController_LinuxLED.h                                     \
     Controllers/OpenRazerController/RGBController_OpenRazer.h                                   \
 
-
     LIBS +=                                                                                     \
     -lusb-1.0                                                                                   \
     -lstdc++fs                                                                                  \
@@ -667,6 +836,15 @@ unix:!macx {
     #-------------------------------------------------------------------------------------------#
     packagesExist(hidapi-hidraw) {
         LIBS += -lhidapi-hidraw
+
+        #---------------------------------------------------------------------------------------#
+        # hidapi-hidraw >= 0.10.1 supports USAGE/USAGE_PAGE                                     #
+        # Define USE_HID_USAGE if hidapi-hidraw supports it                                     #
+        #---------------------------------------------------------------------------------------#
+        HIDAPI_HIDRAW_VERSION = $$system(pkgconf --modversion hidapi-hidraw)
+        if(versionAtLeast(HIDAPI_HIDRAW_VERSION, "0.10.1")) {
+            DEFINES += USE_HID_USAGE
+        }
     } else {
         packagesExist(hidapi-libusb) {
             LIBS += -lhidapi-libusb
@@ -717,18 +895,41 @@ QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.15
 
 macx:ICON = qt/OpenRGB.icns
 
-unix:macx {
+#-------------------------------------------------------------------------------------------#
+# Common MacOS definitions                                                                  #
+#-------------------------------------------------------------------------------------------#
+macx {
+    DEFINES +=                                                                                  \
+    USE_HID_USAGE                                                                               \
+
     SOURCES +=                                                                                  \
     serial_port/find_usb_serial_port_linux.cpp                                                  \
 
+    LIBS +=                                                                                     \
+    -lusb-1.0                                                                                   \
+    -lhidapi                                                                                    \
+}
+
+#-------------------------------------------------------------------------------------------#
+# Apple Silicon (arm64) Homebrew installs at /opt/homebrew                                  #
+#-------------------------------------------------------------------------------------------#
+macx:contains(QMAKE_HOST.arch, arm64) {
+    INCLUDEPATH +=                                                                              \
+    /opt/homebrew/include                                                                       \
+
+    LIBS +=                                                                                     \
+    -L/opt/homebrew/lib                                                                         \
+}
+
+#-------------------------------------------------------------------------------------------#
+# Intel (x86_64) Homebrew installs at /usr/local/lib                                        #
+#-------------------------------------------------------------------------------------------#
+macx:contains(QMAKE_HOST.arch, x86_64) {
     INCLUDEPATH +=                                                                              \
     /usr/local/include                                                                          \
 
     LIBS +=                                                                                     \
-    -L/usr/local/lib -lusb-1.0 -lhidapi                                                         \
-
-    CONFIG +=                                                                                   \
-    c++14                                                                                       \
+    -L/usr/local/lib                                                                            \
 }
 
 DISTFILES += \

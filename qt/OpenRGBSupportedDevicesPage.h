@@ -23,7 +23,11 @@ public:
 private slots:
     void on_SaveButton_clicked();
 
+    void on_OpenSettingsFolderButton_clicked();
+
     void on_Filter_textChanged(const QString &arg1);
+
+    void on_ToggleAllCheckbox_toggled(const bool checked);
 
 private:
     Ui::OpenRGBSupportedDevicesPageUi *ui;

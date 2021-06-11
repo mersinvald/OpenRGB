@@ -32,10 +32,10 @@
 
 struct hid_device_info;
 
-typedef std::function<void(std::vector<i2c_smbus_interface*>&)>                                 I2CBusDetectorFunction;
-typedef std::function<void(std::vector<RGBController*>&)>                                       DeviceDetectorFunction;
-typedef std::function<void(std::vector<i2c_smbus_interface*>&, std::vector<RGBController*>&)>   I2CDeviceDetectorFunction;
-typedef std::function<void(hid_device_info*, const std::string&)>                               HIDDeviceDetectorFunction;
+typedef std::function<void()>                                       I2CBusDetectorFunction;
+typedef std::function<void(std::vector<RGBController*>&)>           DeviceDetectorFunction;
+typedef std::function<void(std::vector<i2c_smbus_interface*>&)>     I2CDeviceDetectorFunction;
+typedef std::function<void(hid_device_info*, const std::string&)>   HIDDeviceDetectorFunction;
 typedef struct
 {
     std::string                 name;
@@ -48,20 +48,56 @@ typedef struct
 
 typedef void (*DeviceListChangeCallback)(void *);
 typedef void (*DetectionProgressCallback)(void *);
+typedef void (*DetectionStartCallback)(void *);
+typedef void (*DetectionEndCallback)(void *);
 typedef void (*I2CBusListChangeCallback)(void *);
 
-class ResourceManager
+class ResourceManagerInterface
+{
+public:
+    virtual std::vector<i2c_smbus_interface*> & GetI2CBusses()                                                                                      = 0;
+
+    virtual void                                RegisterRGBController(RGBController *rgb_controller)                                                = 0;
+    virtual void                                UnregisterRGBController(RGBController *rgb_controller)                                              = 0;
+
+    virtual void                                RegisterDeviceListChangeCallback(DeviceListChangeCallback new_callback, void * new_callback_arg)    = 0;
+    virtual void                                RegisterDetectionProgressCallback(DetectionProgressCallback new_callback, void * new_callback_arg)  = 0;
+    virtual void                                RegisterDetectionStartCallback(DetectionStartCallback new_callback, void * new_callback_arg)        = 0;
+    virtual void                                RegisterDetectionEndCallback(DetectionEndCallback new_callback, void * new_callback_arg)            = 0;
+    virtual void                                RegisterI2CBusListChangeCallback(I2CBusListChangeCallback new_callback, void * new_callback_arg)    = 0;
+
+    virtual std::vector<RGBController*> &       GetRGBControllers()                                                                                 = 0;
+
+    virtual unsigned int                        GetDetectionPercent()                                                                               = 0;
+
+    virtual std::string                         GetConfigurationDirectory()                                                                         = 0;
+
+    virtual std::vector<NetworkClient*>&        GetClients()                                                                                        = 0;
+    virtual NetworkServer*                      GetServer()                                                                                         = 0;
+
+    virtual ProfileManager*                     GetProfileManager()                                                                                 = 0;
+    virtual SettingsManager*                    GetSettingsManager()                                                                                = 0;
+
+    virtual void                                UpdateDeviceList()                                                                                  = 0;
+    virtual void                                WaitForDeviceDetection()                                                                            = 0;
+
+protected:
+    virtual                                    ~ResourceManagerInterface() {};
+};
+
+class ResourceManager: public ResourceManagerInterface
 {
 public:
     static ResourceManager *get();
     
     ResourceManager();
     ~ResourceManager();
-    
+
     void RegisterI2CBus(i2c_smbus_interface *);
     std::vector<i2c_smbus_interface*> & GetI2CBusses();
     
     void RegisterRGBController(RGBController *rgb_controller);
+    void UnregisterRGBController(RGBController *rgb_controller);
 
     std::vector<RGBController*> & GetRGBControllers();
     
@@ -78,12 +114,18 @@ public:
     
     void RegisterDeviceListChangeCallback(DeviceListChangeCallback new_callback, void * new_callback_arg);
     void RegisterDetectionProgressCallback(DetectionProgressCallback new_callback, void * new_callback_arg);
+    void RegisterDetectionStartCallback(DetectionStartCallback new_callback, void * new_callback_arg);
+    void RegisterDetectionEndCallback(DetectionEndCallback new_callback, void * new_callback_arg);
     void RegisterI2CBusListChangeCallback(I2CBusListChangeCallback new_callback, void * new_callback_arg);
 
+    bool         GetDetectionEnabled();
     unsigned int GetDetectionPercent();
     const char*  GetDetectionString();
 
     std::string                     GetConfigurationDirectory();
+
+    void RegisterNetworkClient(NetworkClient* new_client);
+    void UnregisterNetworkClient(NetworkClient* network_client);
 
     std::vector<NetworkClient*>&    GetClients();
     NetworkServer*                  GetServer();
@@ -93,6 +135,7 @@ public:
 
     void                            SetConfigurationDirectory(std::string directory);
 
+    void UpdateDeviceList();
     void DeviceListChanged();
     void DetectionProgressChanged();
     void I2CBusListChanged();
@@ -109,8 +152,13 @@ public:
 
 private:
     void DetectDevicesThreadFunction();
+    void UpdateDetectorSettings();
+    void SetupConfigurationDirectory();
 
-    static std::unique_ptr<ResourceManager>     instance;
+    /*-------------------------------------------------------------------------------------*\
+    | Static pointer to shared instance of ResourceManager                                  |
+    \*-------------------------------------------------------------------------------------*/
+    static ResourceManager*                     instance;
 
     /*-------------------------------------------------------------------------------------*\
     | Detection enabled flag                                                                |
@@ -178,11 +226,17 @@ private:
     std::vector<void *>                         DeviceListChangeCallbackArgs;
 
     /*-------------------------------------------------------------------------------------*\
-    | Detection Progress Callback                                                           |
+    | Detection Progress, Start, and End Callbacks                                          |
     \*-------------------------------------------------------------------------------------*/
     std::mutex                                  DetectionProgressMutex;
     std::vector<DetectionProgressCallback>      DetectionProgressCallbacks;
     std::vector<void *>                         DetectionProgressCallbackArgs;
+
+    std::vector<DetectionStartCallback>         DetectionStartCallbacks;
+    std::vector<void *>                         DetectionStartCallbackArgs;
+
+    std::vector<DetectionEndCallback>           DetectionEndCallbacks;
+    std::vector<void *>                         DetectionEndCallbackArgs;
 
     /*-------------------------------------------------------------------------------------*\
     | I2C/SMBus Adapter List Changed Callback                                               |
@@ -190,4 +244,6 @@ private:
     std::mutex                                  I2CBusListChangeMutex;
     std::vector<I2CBusListChangeCallback>       I2CBusListChangeCallbacks;
     std::vector<void *>                         I2CBusListChangeCallbackArgs;
+
+    std::string config_dir;
 };

@@ -217,6 +217,11 @@ RGBController_MSIGPU::RGBController_MSIGPU(MSIGPUController * msi_gpu_ptr)
     active_mode = GetDeviceMode();
 }
 
+RGBController_MSIGPU::~RGBController_MSIGPU()
+{
+    delete msi_gpu;
+}
+
 void RGBController_MSIGPU::SetupZones()
 {
     /*---------------------------------------------------------*\
@@ -273,32 +278,17 @@ void RGBController_MSIGPU::ResizeZone(int /*zone*/, int /*new_size*/)
 
 void RGBController_MSIGPU::DeviceUpdateLEDs()
 {
-    if (modes[active_mode].flags & MODE_FLAG_HAS_BRIGHTNESS)
-    {
-        msi_gpu->MSIGPURegisterWrite(MSI_GPU_REG_BRIGHTNESS, brightness_values[4]); // how to access brightness value?
-    }
-
-    if (modes[active_mode].flags & MODE_FLAG_HAS_SPEED)
-    {
-        msi_gpu->MSIGPURegisterWrite(MSI_GPU_REG_SPEED, speed_values[modes[active_mode].speed]);
-    }
-
     msi_gpu->MSIGPURegisterWrite(MSI_GPU_REG_UNKNOWN, 0x00);
 
-    if (modes[active_mode].flags & MODE_FLAG_HAS_PER_LED_COLOR)
+    if (modes[active_mode].value == MSI_GPU_MODE_FADEIN)
     {
-        if (modes[active_mode].value == MSI_GPU_MODE_FADEIN)
-        {
-            msi_gpu->SetRGB2(RGBGetRValue(colors[1]), RGBGetGValue(colors[1]), RGBGetBValue(colors[1]));
-            msi_gpu->SetRGB3(RGBGetRValue(colors[2]), RGBGetGValue(colors[2]), RGBGetBValue(colors[2]));
-        }
-        else
-        {
-            msi_gpu->SetRGB1(RGBGetRValue(colors[0]), RGBGetGValue(colors[0]), RGBGetBValue(colors[0]));
-        }
+        msi_gpu->SetRGB2(RGBGetRValue(colors[1]), RGBGetGValue(colors[1]), RGBGetBValue(colors[1]));
+        msi_gpu->SetRGB3(RGBGetRValue(colors[2]), RGBGetGValue(colors[2]), RGBGetBValue(colors[2]));
     }
-    
-    msi_gpu->SetMode(modes[active_mode].value);
+    else
+    {
+        msi_gpu->SetRGB1(RGBGetRValue(colors[0]), RGBGetGValue(colors[0]), RGBGetBValue(colors[0]));
+    }
 }
 
 void RGBController_MSIGPU::UpdateZoneLEDs(int /*zone*/)
@@ -313,10 +303,20 @@ void RGBController_MSIGPU::UpdateSingleLED(int /*led*/)
 
 void RGBController_MSIGPU::SetCustomMode()
 {
-    active_mode = 0;
+    active_mode = 2;  //Set to MSI_GPU_MODE_STATIC
 }
 
 void RGBController_MSIGPU::DeviceUpdateMode()
 {
-    DeviceUpdateLEDs();
+    if (modes[active_mode].flags & MODE_FLAG_HAS_BRIGHTNESS)
+    {
+        msi_gpu->MSIGPURegisterWrite(MSI_GPU_REG_BRIGHTNESS, brightness_values[4]); // how to access brightness value?
+    }
+
+    if (modes[active_mode].flags & MODE_FLAG_HAS_SPEED)
+    {
+        msi_gpu->MSIGPURegisterWrite(MSI_GPU_REG_SPEED, speed_values[modes[active_mode].speed]);
+    }
+
+    msi_gpu->SetMode(modes[active_mode].value);
 }

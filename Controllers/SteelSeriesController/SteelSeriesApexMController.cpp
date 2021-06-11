@@ -29,7 +29,7 @@ SteelSeriesApexMController::SteelSeriesApexMController(hid_device* dev_handle, s
 
 SteelSeriesApexMController::~SteelSeriesApexMController()
 {
-
+    hid_close(dev);
 }
 
 void SteelSeriesApexMController::EnableLEDControl()
@@ -62,7 +62,7 @@ void SteelSeriesApexMController::EnableLEDControl()
     hid_send_feature_report(dev, buf, 513);
 }
 
-void SteelSeriesApexMController::SetMode(unsigned char mode, std::vector<RGBColor> colors)
+void SteelSeriesApexMController::SetMode(unsigned char /*mode*/, std::vector<RGBColor> /*colors*/)
 {
 }
 
